@@ -1,0 +1,336 @@
+<html>
+
+<head>
+    <title>My first three.js app</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%
+        }
+    </style>
+</head>
+
+<body>    
+	<script src="js/three.js"></script>
+    <script src="js/OBJLoader.js"></script>
+    <script src="js/MTLLoader.js"></script>
+    <script src="js/Projector.js"></script>
+    <script src="js/OrbitControls.js"></script>
+    <script>
+        var camera, scene, renderer, controls, raycaster, group, mouse;
+        var clock = new THREE.Clock();
+		
+		// Metadata of images
+		var para = [{"Label":"image/2016-02-16_141201.270802.jpg","X":151419.2435,"Y":360489.7499,"Z":66.48865482,"Omega":82.3209384,"Phi":34.72107459,"Kappa":3.170738686},
+					{"Label":"image/2016-02-16_141203.273371.jpg","X":151422.6011,"Y":360494.6905,"Z":66.85663691,"Omega":82.80149661,"Phi":34.91764845,"Kappa":3.311246691},
+					{"Label":"image/2016-02-16_141205.293141.jpg","X":151426.0697,"Y":360499.75,"Z":67.28468359,"Omega":83.91454694,"Phi":34.17296115,"Kappa":2.286488737},
+					{"Label":"image/2016-02-16_141207.276796.jpg","X":151429.5725,"Y":360504.7655,"Z":67.7947553,"Omega":84.57959628,"Phi":35.13384167,"Kappa":1.490961561},
+					{"Label":"image/2016-02-16_141209.299362.jpg","X":151433.1177,"Y":360509.8432,"Z":67.53880592,"Omega":83.23357733,"Phi":34.91911,"Kappa":2.844264989},
+					{"Label":"image/2016-02-16_141211.280460.jpg","X":151436.6317,"Y":360514.8229,"Z":67.17037856,"Omega":82.35426322,"Phi":34.60053405,"Kappa":4.190130003},
+					{"Label":"image/2016-02-16_141213.265908.jpg","X":151439.8586,"Y":360519.7102,"Z":67.17768786,"Omega":82.61256134,"Phi":35.0593335,"Kappa":2.962701991},
+					{"Label":"image/2016-02-16_141215.269467.jpg","X":151443.4095,"Y":360524.5215,"Z":67.29591012,"Omega":82.70681374,"Phi":34.86140053,"Kappa":3.172179233},
+					{"Label":"image/2016-02-16_141217.273271.jpg","X":151446.7215,"Y":360529.3402,"Z":67.6853664,"Omega":83.34834505,"Phi":34.87037963,"Kappa":4.569968181},
+					{"Label":"image/2016-02-16_141219.272381.jpg","X":151449.5956,"Y":360533.7431,"Z":67.89047535,"Omega":83.94436626,"Phi":34.85914732,"Kappa":0.887654792},
+					{"Label":"image/2016-02-16_141221.291405.jpg","X":151452.352,"Y":360538.1593,"Z":68.07279195,"Omega":86.79815568,"Phi":36.13936619,"Kappa":0.725927868},
+					{"Label":"image/2016-02-16_141223.292788.jpg","X":151455.1854,"Y":360541.9495,"Z":68.48342631,"Omega":82.75111243,"Phi":35.24203359,"Kappa":3.30693092},
+					{"Label":"image/2016-02-16_141225.262028.jpg","X":151457.8189,"Y":360545.5,"Z":68.71849142,"Omega":85.14787711,"Phi":34.41800132,"Kappa":1.518776323},
+					{"Label":"image/2016-02-16_141227.263350.jpg","X":151460.8499,"Y":360548.9397,"Z":69.15767325,"Omega":83.72821009,"Phi":34.89414302,"Kappa":0.91928949},
+					{"Label":"image/2016-02-16_141229.282238.jpg","X":151463.3502,"Y":360551.8382,"Z":69.63848061,"Omega":81.12618906,"Phi":34.32419193,"Kappa":3.955495856},
+					{"Label":"image/2016-02-16_141233.285786.jpg","X":151465.8575,"Y":360554.615,"Z":70.14546816,"Omega":81.91189089,"Phi":34.27188578,"Kappa":8.112426605},
+					{"Label":"image/2016-02-16_141235.272658.jpg","X":151465.575,"Y":360554.4421,"Z":70.23666623,"Omega":85.0298501,"Phi":34.41360411,"Kappa":1.920722294},
+					{"Label":"image/2016-02-16_141237.273615.jpg","X":151465.5644,"Y":360554.2685,"Z":69.48324554,"Omega":83.65976835,"Phi":33.34024963,"Kappa":5.067769892},
+					{"Label":"image/2016-02-16_141239.259755.jpg","X":151465.5042,"Y":360554.2014,"Z":68.57230819,"Omega":85.30010437,"Phi":33.17446469,"Kappa":3.483080055},
+					{"Label":"image/2016-02-16_141241.260580.jpg","X":151465.4595,"Y":360554.1911,"Z":68.04757202,"Omega":86.26640737,"Phi":32.27907019,"Kappa":3.162550699},
+					{"Label":"image/2016-02-16_141051.284213.jpg","X":151295.1286,"Y":360324.0353,"Z":64.43943138,"Omega":79.49915918,"Phi":52.95278956,"Kappa":5.901714418},
+					{"Label":"image/2016-02-16_141053.319496.jpg","X":151299.6657,"Y":360328.0115,"Z":64.3664377,"Omega":79.84581972,"Phi":53.5150638,"Kappa":6.293140402},
+					{"Label":"image/2016-02-16_141055.271570.jpg","X":151304.1891,"Y":360331.7975,"Z":64.01278509,"Omega":79.54735119,"Phi":54.4781006,"Kappa":5.895389632},
+					{"Label":"image/2016-02-16_141057.306592.jpg","X":151308.9259,"Y":360335.7475,"Z":64.41725946,"Omega":67.20015833,"Phi":51.59865232,"Kappa":16.46459262},
+					{"Label":"image/2016-02-16_141059.275377.jpg","X":151312.0317,"Y":360340.787,"Z":64.86392305,"Omega":81.55406355,"Phi":54.37263086,"Kappa":6.01299294},
+					{"Label":"image/2016-02-16_141101.277390.jpg","X":151315.1985,"Y":360345.5722,"Z":64.03174469,"Omega":78.91708441,"Phi":54.20908669,"Kappa":6.975449179},
+					{"Label":"image/2016-02-16_141103.264928.jpg","X":151318.4167,"Y":360350.4529,"Z":63.8825234,"Omega":80.09225151,"Phi":54.61657188,"Kappa":6.441662702},
+					{"Label":"image/2016-02-16_141105.288882.jpg","X":151321.8586,"Y":360355.3372,"Z":64.19163313,"Omega":78.33226344,"Phi":54.26558253,"Kappa":7.779011188},
+					{"Label":"image/2016-02-16_141107.287158.jpg","X":151325.2138,"Y":360360.1725,"Z":64.33902554,"Omega":79.7651541,"Phi":55.10654736,"Kappa":6.502963355},
+					{"Label":"image/2016-02-16_141109.286390.jpg","X":151328.6386,"Y":360364.9221,"Z":64.53663927,"Omega":79.09235166,"Phi":54.63777151,"Kappa":6.415323084},
+					{"Label":"image/2016-02-16_141111.337639.jpg","X":151332.1802,"Y":360369.8526,"Z":64.41945414,"Omega":79.63217679,"Phi":54.83970206,"Kappa":6.036026011},
+					{"Label":"image/2016-02-16_141113.274220.jpg","X":151335.5027,"Y":360374.4374,"Z":64.62005512,"Omega":80.65591424,"Phi":54.69441832,"Kappa":5.422887552},
+					{"Label":"image/2016-02-16_141115.293117.jpg","X":151338.8249,"Y":360379.0351,"Z":64.47084114,"Omega":82.95661524,"Phi":49.79754911,"Kappa":1.377285372},
+					{"Label":"image/2016-02-16_141117.277007.jpg","X":151342.2493,"Y":360383.5157,"Z":64.5282899,"Omega":81.04425225,"Phi":49.8780125,"Kappa":4.098762077},
+					{"Label":"image/2016-02-16_141119.262010.jpg","X":151346.0334,"Y":360388.1371,"Z":64.88072222,"Omega":81.14255523,"Phi":48.32820893,"Kappa":5.00073963},
+					{"Label":"image/2016-02-16_141121.280988.jpg","X":151349.8003,"Y":360393.1016,"Z":64.95274552,"Omega":85.13196814,"Phi":49.50363332,"Kappa":2.647063466},
+					{"Label":"image/2016-02-16_141123.266069.jpg","X":151353.7691,"Y":360397.7126,"Z":64.60765767,"Omega":78.87312166,"Phi":48.87316735,"Kappa":6.418223303},
+					{"Label":"image/2016-02-16_141125.285732.jpg","X":151357.4596,"Y":360402.6545,"Z":64.05893024,"Omega":82.28639737,"Phi":49.88280215,"Kappa":3.390405874},
+					{"Label":"image/2016-02-16_141127.288703.jpg","X":151361.1051,"Y":360407.3,"Z":64.0991632,"Omega":79.85598998,"Phi":50.13424849,"Kappa":4.961902925},
+					{"Label":"image/2016-02-16_141129.272742.jpg","X":151364.6448,"Y":360411.9,"Z":63.74771703,"Omega":82.63601133,"Phi":50.10387481,"Kappa":2.55331363},
+					{"Label":"image/2016-02-16_141131.274000.jpg","X":151368.1631,"Y":360416.5952,"Z":64.34498588,"Omega":81.34711514,"Phi":50.75089609,"Kappa":3.304687399},
+					{"Label":"image/2016-02-16_141133.360370.jpg","X":151372.0328,"Y":360421.4107,"Z":64.30534271,"Omega":79.53603845,"Phi":49.67658326,"Kappa":5.151593977},
+					{"Label":"image/2016-02-16_141135.278120.jpg","X":151375.7711,"Y":360425.9762,"Z":64.03381432,"Omega":80.60343033,"Phi":49.98138504,"Kappa":5.552080401},
+					{"Label":"image/2016-02-16_141137.263756.jpg","X":151379.3115,"Y":360430.7665,"Z":64.41132538,"Omega":79.6879933,"Phi":45.30083411,"Kappa":5.652874461},
+					{"Label":"image/2016-02-16_141139.266983.jpg","X":151382.6501,"Y":360435.6442,"Z":64.55539545,"Omega":80.4503039,"Phi":45.21259803,"Kappa":4.841910515},
+					{"Label":"image/2016-02-16_141141.267506.jpg","X":151385.8513,"Y":360440.3927,"Z":64.88732322,"Omega":81.80665918,"Phi":45.35468093,"Kappa":2.367754585},
+					{"Label":"image/2016-02-16_141143.252662.jpg","X":151389.2447,"Y":360445.2052,"Z":65.37741226,"Omega":79.48475358,"Phi":44.89713776,"Kappa":5.749277024},
+					{"Label":"image/2016-02-16_141145.271180.jpg","X":151392.526,"Y":360450.2539,"Z":65.61821205,"Omega":81.12574169,"Phi":45.20148277,"Kappa":4.28361019},
+					{"Label":"image/2016-02-16_141147.275178.jpg","X":151395.8534,"Y":360455.2108,"Z":65.73110236,"Omega":81.88899433,"Phi":45.64273986,"Kappa":3.433887737},
+					{"Label":"image/2016-02-16_141149.275336.jpg","X":151399.261,"Y":360460.2266,"Z":65.66801993,"Omega":81.17311136,"Phi":45.20396556,"Kappa":4.363994589},
+					{"Label":"image/2016-02-16_141151.277271.jpg","X":151402.6859,"Y":360465.2913,"Z":65.50042568,"Omega":80.93835844,"Phi":45.08175919,"Kappa":5.044728512},
+					{"Label":"image/2016-02-16_141153.262538.jpg","X":151405.9867,"Y":360470.2521,"Z":65.67361147,"Omega":81.30188989,"Phi":45.34208617,"Kappa":4.399543775},
+					{"Label":"image/2016-02-16_141155.265326.jpg","X":151409.2236,"Y":360475.0917,"Z":65.73258344,"Omega":81.57628357,"Phi":45.71232908,"Kappa":3.793415318},
+					{"Label":"image/2016-02-16_141157.266349.jpg","X":151412.423,"Y":360479.9596,"Z":65.83884034,"Omega":83.01090666,"Phi":45.6218983,"Kappa":2.394534729},
+					{"Label":"image/2016-02-16_141159.268541.jpg","X":151415.8574,"Y":360484.8693,"Z":66.02363626,"Omega":82.64391657,"Phi":34.08586522,"Kappa":3.307399573}];
+        
+		// Translation parameters
+		var translation = [151282.320, 360456.250, 60.667];
+
+		// Scene - 3D model, group, ply
+		// group - images
+        function init() {
+			
+			/******************************************
+			Description of group, scene
+			******************************************/
+            group = new THREE.Group();	// Collection of object
+            scene = new THREE.Scene();	// Frame of a browser
+
+			// Scene description
+            var SCREEN_WIDTH = window.innerWidth,
+                SCREEN_HEIGHT = window.innerHeight;
+            
+			// Camera description
+			var VIEW_ANGLE = 60,
+                ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT,
+                NEAR = 0.1,
+                FAR = 2000000;				
+            camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
+            camera.position.z = 500;
+			scene.add(camera);
+			
+			// Light description
+			var light = new THREE.AmbientLight(0x404040, 5);
+            scene.add(light);            
+
+			// WebGL
+            renderer = new THREE.WebGLRenderer({
+                antialias: true,
+                alpha: true
+            });
+            renderer.setClearColor(0xffffff, 1);	// Background color
+            renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+			
+			// Mouse controls
+            var controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+			// Return coordinates of the scene
+            raycaster = new THREE.Raycaster();
+            mouse = new THREE.Vector2();
+
+			// javascript를 html로 구현
+            document.body.appendChild(renderer.domElement);
+
+			/******************************************
+			1. 3D model: texture - mtl, geometry - obj
+			******************************************/
+            var mtlLoader = new THREE.MTLLoader();
+            mtlLoader.load('3DModel/강정고령보.mtl', function(materials) {			
+                materials.preload();
+                var objLoader = new THREE.OBJLoader();
+                objLoader.setMaterials(materials);
+
+                objLoader.load('3DModel/강정고령보_171012.obj', function(object) {
+                    scene.add(object);
+                });
+            });
+
+			/******************************************
+			2. Raw images
+			******************************************/
+            for (var i = 0; i < para.length; i++) {
+                (function(index) {
+                    // Set the size of an image, only put the power of 2
+					var canvas2 = document.createElement('canvas');                    
+					canvas2.width = 1024;
+                    canvas2.height = 1024;
+
+					// Set dimensions of the canvas
+                    var context2 = canvas2.getContext('2d');
+					// A parameter for texture of the canvas
+                    var texture2 = new THREE.Texture(canvas2);
+
+                    var imageObj = new Image();
+                    imageObj.src = para[i].Label;
+                    imageObj.onload = function() {
+						// Actual size of each image
+						// 1024 X 682 is that keeping the ratio of original images (6000 X 4000)
+                        context2.drawImage(imageObj, 0, 0, 1024, 682);						
+                        if (texture2)
+                            texture2.needsUpdate = true;
+                    };
+
+                    var material2 = new THREE.MeshBasicMaterial({
+                        map: texture2,
+                        side: THREE.DoubleSide
+                    });
+                    material2.transparent = true;
+
+                    var mesh2 = new THREE.Mesh(
+                        new THREE.PlaneGeometry(canvas2.width, canvas2.height),
+                        material2
+                    );
+					
+					// Translation
+					var x = para[i].X - translation[0];
+                    var y = para[i].Y - translation[1];
+                    var z = para[i].Z - translation[2];
+                    mesh2.position.set(x, y, z);
+					
+                    // Set the scale of images, 1 is 100%
+					mesh2.scale.set(0.04, 0.04, 0.04);
+
+					// Convert degree to radian
+                    mesh2.rotation.x = (para[i].Omega * Math.PI / 180);
+                    mesh2.rotation.y = (para[i].Phi * Math.PI / 180);
+                    mesh2.rotation.z = (para[i].Kappa * Math.PI / 180);
+
+					// Add images to group
+                    group.add(mesh2);
+                })(i);
+            }
+			// Add group to scene
+            scene.add(group);
+			
+			// Visualize XYZ axis
+			var axisHelper = new THREE.AxisHelper( 25 );
+			scene.add( axisHelper );
+			
+			/******************************************
+			3. Rectified Images - ply
+			Each ply file consists of 2 faces
+			******************************************/			
+			var image = [{"name":"RectifiedImages/rectified_IMG_0048.JPG","ply":"RectifiedImages/rectified_IMG_0048.ply"},
+						{"name":"RectifiedImages/rectified_IMG_0102.JPG","ply":"RectifiedImages/rectified_IMG_0102.ply"},
+						{"name":"RectifiedImages/rectified_IMG_0134.JPG","ply":"RectifiedImages/rectified_IMG_0134.ply"},
+						{"name":"RectifiedImages/rectified_IMG_20170308_162011.JPG","ply":"RectifiedImages/rectified_IMG_20170308_162011.ply"},
+						{"name":"RectifiedImages/rectified_IMG_20170308_162238.JPG","ply":"RectifiedImages/rectified_IMG_20170308_162238.ply"},
+						{"name":"RectifiedImages/rectified_IMG_20170308_163256.JPG","ply":"RectifiedImages/rectified_IMG_20170308_163256.ply"}];
+			
+			// Texture & Material
+			for (var i = 0; i < image.length; i++) {
+                (function(index) {
+					var texture3 = new THREE.TextureLoader().load(image[i].name);
+					var material3 = new THREE.MeshBasicMaterial({
+						map: texture3,
+						side: THREE.DoubleSide
+					});
+			
+				var geometry3 = new THREE.Geometry();	// for custom shapes
+				
+				// Read the information of ply files - coordinates
+				var infoPly = readtextfile(image[i].ply);
+				
+				// Read X, Y, Z coordinates of each point
+				var [coordPly1, coordPly2, coordPly3, coordPly4, Vertex1, Vertex2] = splitline(infoPly);
+				var [coordPly1_x, coordPly1_y, coordPly1_z] = getcoordPLY(coordPly1);
+				var [coordPly2_x, coordPly2_y, coordPly2_z] = getcoordPLY(coordPly2);
+				var [coordPly3_x, coordPly3_y, coordPly3_z] = getcoordPLY(coordPly3);
+				var [coordPly4_x, coordPly4_y, coordPly4_z] = getcoordPLY(coordPly4);
+				var [v1_FN1, v1_FN2, v1_FN3, v1_FN4, v1_FN5, v1_FV1, v1_FV2, v1_FV3, v1_FV4, v1_FV5, v1_FV6] = getVertex(Vertex1);
+				var [v2_FN1, v2_FN2, v2_FN3, v2_FN4, v2_FN5, v2_FV1, v2_FV2, v2_FV3, v2_FV4, v2_FV5, v2_FV6] = getVertex(Vertex2);				
+								
+				var v1 = new THREE.Vector3(coordPly1_x - translation[0], coordPly1_y - translation[1], coordPly1_z - translation[2]);
+				var v2 = new THREE.Vector3(coordPly2_x - translation[0], coordPly2_y - translation[1], coordPly2_z - translation[2]);
+				var v3 = new THREE.Vector3(coordPly3_x - translation[0], coordPly3_y - translation[1], coordPly3_z - translation[2]);
+				var v4 = new THREE.Vector3(coordPly4_x - translation[0], coordPly4_y - translation[1], coordPly4_z - translation[2]);
+				
+				geometry3.vertices.push(v1);
+				geometry3.vertices.push(v2);
+				geometry3.vertices.push(v3);
+				geometry3.vertices.push(v4);
+				
+				// For face 1
+				geometry3.faces.push(new THREE.Face3(2, 1, 0));
+				geometry3.faceVertexUvs[0].push([
+					new THREE.Vector2(v1_FV1, v1_FV2),
+					new THREE.Vector2(v1_FV3, v1_FV4),
+					new THREE.Vector2(v1_FV5, v1_FV6)
+				]);
+				
+				// For face 2
+				geometry3.faces.push(new THREE.Face3(3, 2, 0));				
+				geometry3.faceVertexUvs[0].push([
+					new THREE.Vector2(v2_FV1, v2_FV2),
+					new THREE.Vector2(v2_FV3, v2_FV4),
+					new THREE.Vector2(v2_FV5, v2_FV6)
+				]);				
+				geometry3.uvsNeedUpdate = true;
+
+				mesh = new THREE.Mesh(geometry3, material3);
+				scene.add(mesh);
+				})(i);
+			}	// End of for loop
+
+			// Return coordinates of the scene
+            document.addEventListener('mousedown', onDocumentMouseDown, false);
+			
+        } //End of function 
+
+
+        function animate() {
+            requestAnimationFrame(animate);
+            render();
+        } //Timing control
+
+        function render() {
+            renderer.render(scene, camera);
+        } 
+        //Appear on the screen
+
+        function onDocumentMouseDown(evt)	{
+            evt.preventDefault();
+
+            mouse.x = ((evt.clientX) / window.innerWidth) * 2 - 1;
+            mouse.y = -((evt.clientY) / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+			
+			// update the picking ray with the camera and mouse position
+            var intersects = raycaster.intersectObjects(scene.children, true);
+			
+			// calculate objects intersecting the picking ray          
+            if (intersects.length > 0)
+                console.log(intersects[0].point);
+        }; //End of function
+	 	 
+		function readtextfile(filename)	{
+			var x = new XMLHttpRequest(); 
+			x.open("GET",filename,false); 
+			x.send(); 
+			myTextFile=x.responseText;		
+			
+			return myTextFile;
+		}; //End of function
+		
+		function splitline(textfile)
+		{
+			var line = textfile.split("\n");
+			return [line[12], line[13],line[14],line[15],line[16],line[17]];
+		};
+		
+		function getcoordPLY(plyline)
+		{
+			var coordPLY = plyline.split(" ");						
+			return [coordPLY[0], coordPLY[1], coordPLY[2]];
+		};
+
+		function getVertex(vertexline)		
+		{
+			var v = vertexline.split(" ");			
+			return [v[0], v[1],v[2],v[3],v[4], v[5],v[6],v[7],v[8],v[9],v[10]];
+		};
+
+        init();
+        animate();
+    </script>
+</body>
+
+</html>
