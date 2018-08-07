@@ -7,8 +7,13 @@
 ***
 
 ## How to execute
-1. Install 'Web Server for Chrome' extension
-2. Designate the path to files
+1. Install [Web Server for Chrome](https://chrome.google.com/webstore/detail/web-server-for-chrome/ofhbbkphhbklhfoeikjpcbhemlocgigb) extension
+2. Designate the path to files(CHOOSE FOLDER)
 3. Click Web Server URL
+***
+![Settings of 'Web Server for Chrome'](/WebServerforChrome.png)
+***
 4. Click **VisualSW.html**
 5. See what happens(It could take long time...)
+***
+![Settings of 'The result of visualization'](/ResofVis.png)
